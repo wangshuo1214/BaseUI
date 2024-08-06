@@ -106,15 +106,15 @@
               />
             </template>
           </el-table-column>
-          <el-table-column label="修改时间" align="center" prop="updateDate" width="160">
+          <el-table-column label="修改时间" align="center" prop="updateTime" width="160">
             <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.updateDate) }}</span>
+              <span>{{ parseTime(scope.row.updateTime) }}</span>
             </template>
           </el-table-column>
           <el-table-column
             label="操作"
             align="center"
-            width="160"
+            width="250"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="scope">
@@ -135,7 +135,7 @@
                 type="text"
                 icon="el-icon-key"
                 @click="handleResetPwd(scope.row)"
-              >重置</el-button>
+              >重置密码</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -167,12 +167,12 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="登录名" prop="userName">
+            <el-form-item v-if="form.id == undefined" label="登录名" prop="userName">
               <el-input v-model="form.userName" placeholder="请输入登录名" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户密码" prop="password">
+            <el-form-item v-if="form.id == undefined" label="用户密码" prop="password">
               <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20" show-password />
             </el-form-item>
           </el-col>
@@ -246,7 +246,7 @@ export default {
         page: {
           pageNum: 1,
           pageSize: 10,
-          orderByColumn: 'updateDate',
+          orderByColumn: 'updateTime',
           orderFlag: 'desc'
         },
         item: {
@@ -280,7 +280,7 @@ export default {
   created() {
     this.getList()
     this.getDeptTree()
-    this.getDicts('sys_normal_disable').then(response => {
+    this.getDicts('user_status').then(response => {
       this.statusOptions = response.data
     })
   },
@@ -298,7 +298,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        userId: undefined,
+        id: undefined,
         deptId: undefined,
         userName: undefined,
         realName: undefined,
@@ -310,7 +310,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.userId)
+      this.ids = selection.map(item => item.id)
     },
     // 用户状态修改
     handleStatusChange(row) {
@@ -320,7 +320,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return changeUserStatus(row.userId, row.status)
+        return changeUserStatus(row.id, row.status)
       }).then(() => {
         this.msgSuccess(text + '成功')
       }).catch(function() {
@@ -330,8 +330,8 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      const userId = row.userId
-      getUser(userId).then(response => {
+      const id = row.id
+      getUser(id).then(response => {
         this.form = response.data
         this.open = true
         this.title = '修改用户'
@@ -339,13 +339,13 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const userIds = row.userId !== undefined ? [row.userId] : this.ids
+      const ids = row.id !== undefined ? [row.id] : this.ids
       this.$confirm('是否确认删除选中的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return delUser(userIds)
+        return delUser(ids)
       }).then(() => {
         this.getList()
         this.msgSuccess('删除成功')
@@ -353,13 +353,13 @@ export default {
     },
     /** 重置按钮操作 */
     handleResetPwd(row) {
-      const userId = row.userId
+      const id = row.id
       this.$confirm('是否确认重置"' + row.userName + '"的密码?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return resetPwd(userId)
+        return resetPwd(id)
       }).then(() => {
         this.getList()
         this.msgSuccess('重置密码成功')
@@ -369,7 +369,7 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.form.userId !== undefined) {
+          if (this.form.id !== undefined) {
             updateUser(this.form).then(response => {
               this.msgSuccess('修改成功')
               this.open = false

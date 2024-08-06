@@ -54,9 +54,9 @@
       <el-table-column prop="orderNum" label="排序" width="60" />
       <el-table-column prop="perms" label="权限标识" :show-overflow-tooltip="true" />
       <el-table-column prop="component" label="组件路径" :show-overflow-tooltip="true" />
-      <el-table-column prop="createDate" label="创建时间" align="center">
+      <el-table-column prop="createTime" label="创建时间" align="center">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createDate) }}</span>
+          <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">

@@ -23,8 +23,8 @@
                 <el-form-item label="角色" prop="roleName">
                   <el-input v-model="user.roleName" maxlength="50" :disabled="true" />
                 </el-form-item>
-                <el-form-item label="创建时间" prop="createDate">
-                  <el-input v-model="user.createDate" maxlength="50" :disabled="true" />
+                <el-form-item label="创建时间" prop="createTime">
+                  <el-input v-model="user.createTime" maxlength="50" :disabled="true" />
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" size="mini" @click="submit">保存</el-button>

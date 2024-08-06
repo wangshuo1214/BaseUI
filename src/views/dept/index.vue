@@ -42,15 +42,15 @@
       v-if="refreshTable"
       v-loading="loading"
       :data="deptList"
-      row-key="deptId"
+      row-key="id"
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
       <el-table-column prop="deptName" label="部门名称" width="260" />
       <el-table-column prop="orderNum" label="排序" width="200" />
-      <el-table-column label="创建时间" align="center" prop="createDate" width="200">
+      <el-table-column label="创建时间" align="center" prop="createTime" width="200">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createDate) }}</span>
+          <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -98,18 +98,6 @@
           <el-col :span="12">
             <el-form-item label="显示排序" prop="orderNum">
               <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="负责人" prop="leader">
-              <el-input v-model="form.leader" placeholder="请输入负责人" maxlength="20" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="联系电话" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入联系电话" maxlength="11" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -163,13 +151,6 @@ export default {
         ],
         orderNum: [
           { required: true, message: '显示排序不能为空', trigger: 'blur' }
-        ],
-        phone: [
-          {
-            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-            message: '请输入正确的手机号码',
-            trigger: 'blur'
-          }
         ]
       }
     }
@@ -182,7 +163,7 @@ export default {
     getList() {
       this.loading = true
       listDept(this.queryParams).then(response => {
-        this.deptList = this.handleTree(response.data, 'deptId')
+        this.deptList = this.handleTree(response.data, 'id')
         this.loading = false
       })
     },
@@ -201,32 +182,29 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        deptId: undefined,
+        id: undefined,
         parentId: undefined,
         deptName: undefined,
-        orderNum: undefined,
-        leader: undefined,
-        phone: undefined,
-        email: undefined
+        orderNum: undefined
       }
       this.resetForm('form')
     },
     /** 查询菜单下拉树结构 */
     getTreeselect(id) {
       listDeptExcludeChild(id).then(response => {
-        this.deptOptions.push(this.handleTree(response.data, 'deptId'))
+        this.deptOptions.push(this.handleTree(response.data, 'id'))
       })
     },
     /** 新增按钮操作 */
     handleAdd(row) {
       this.reset()
       if (row !== undefined) {
-        this.form.parentId = row.deptId
+        this.form.parentId = row.id
       }
       this.open = true
       this.title = '添加部门'
       listDept({}).then(response => {
-        this.deptOptions = this.handleTree(response.data, 'deptId')
+        this.deptOptions = this.handleTree(response.data, 'id')
       })
     },
     /** 重置按钮操作 */
@@ -240,7 +218,7 @@ export default {
         delete node.children
       }
       return {
-        id: node.deptId,
+        id: node.id,
         label: node.deptName,
         children: node.children
       }
@@ -253,22 +231,22 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      getDept(row.deptId).then(response => {
+      getDept(row.id).then(response => {
         this.form = response.data
         this.open = true
         this.title = '修改部门'
       })
       // eslint-disable-next-line
-      listDeptExcludeChild(row.deptId).then(response => {
+      listDeptExcludeChild(row.id).then(response => {
         // eslint-disable-next-line
-	      this.deptOptions = this.handleTree(response.data, 'deptId')
+	      this.deptOptions = this.handleTree(response.data, 'id')
       })
     },
     /** 提交按钮 */
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.form.deptId !== undefined) {
+          if (this.form.id !== undefined) {
             updateDept(this.form).then(response => {
               this.msgSuccess('修改成功')
               this.open = false
@@ -291,7 +269,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return delDept(row.deptId)
+        return delDept(row.id)
       }).then(() => {
         this.getList()
         this.msgSuccess('删除成功')

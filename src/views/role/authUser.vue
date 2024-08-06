@@ -55,9 +55,9 @@
           <el-tag v-else type="danger">{{ formatDictName(scope.row.status) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createDate" width="180">
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createDate) }}</span>
+          <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
