@@ -51,20 +51,6 @@ export const constantRoutes = [
     component: () => import('@/views/404'),
     hidden: true
   },
-  // {
-  //   path: '/user',
-  //   component: Layout,
-  //   hidden: true,
-  //   redirect: 'noredirect',
-  //   children: [
-  //     {
-  //       path: 'profile',
-  //       component: () => import('@/views/user/profile/index'),
-  //       name: 'Profile',
-  //       meta: { title: '个人中心', icon: 'user' }
-  //     }
-  //   ]
-  // },
   {
     path: '',
     component: Layout,

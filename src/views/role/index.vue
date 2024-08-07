@@ -48,7 +48,7 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="显示顺序" prop="orderNum" width="100" />
       <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
-      <el-table-column label="权限字符" prop="roleKey" :show-overflow-tooltip="true" width="150" />
+      <el-table-column label="角色编码" prop="roleKey" :show-overflow-tooltip="true" width="150" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -94,12 +94,9 @@
         </el-form-item>
         <el-form-item prop="roleKey">
           <span slot="label">
-            <el-tooltip content="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasRole('admin')`)" placement="top">
-              <i class="el-icon-question" />
-            </el-tooltip>
-            权限字符
+            角色编码
           </span>
-          <el-input v-model="form.roleKey" placeholder="请输入权限字符" />
+          <el-input v-model="form.roleKey" placeholder="请输入角色编码" />
         </el-form-item>
         <el-form-item label="角色顺序" prop="orderNum">
           <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
@@ -194,7 +191,7 @@ export default {
   methods: {
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.roleId)
+      this.ids = selection.map(item => item.id)
     },
     /** 查询角色列表 */
     getList() {
@@ -225,7 +222,7 @@ export default {
       this.menuExpand = false
       this.menuNodeAll = false
       this.form = {
-        roleId: undefined,
+        id: undefined,
         roleName: undefined,
         roleKey: undefined,
         orderNum: 0,
@@ -245,9 +242,9 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      const roleId = row.roleId
-      const roleMenu = this.getRoleMenuTreeselect(roleId)
-      getRole(roleId).then(response => {
+      const id = row.id
+      const roleMenu = this.getRoleMenuTreeselect(id)
+      getRole(id).then(response => {
         this.form = response.data
         this.open = true
         this.$nextTick(() => {
@@ -265,13 +262,13 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const roleIds = row.roleId !== undefined ? [row.roleId] : this.ids
+      const ids = row.id !== undefined ? [row.id] : this.ids
       this.$confirm('是否确认删除选中的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return delRole(roleIds)
+        return delRole(ids)
       }).then(() => {
         this.getList()
         this.msgSuccess('删除成功')
@@ -287,7 +284,7 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.form.roleId !== undefined) {
+          if (this.form.id !== undefined) {
             this.form.menuIds = this.getMenuAllCheckedKeys()
             updateRole(this.form).then(response => {
               this.msgSuccess('修改成功')
@@ -327,8 +324,8 @@ export default {
       }
     },
     /** 根据角色ID查询菜单树结构 */
-    getRoleMenuTreeselect(roleId) {
-      return roleMenuTreeselect(roleId).then(response => {
+    getRoleMenuTreeselect(id) {
+      return roleMenuTreeselect(id).then(response => {
         this.menuOptions = response.data.menus
         return response
       })
@@ -338,8 +335,8 @@ export default {
       this.$refs.menu.setCheckedNodes(value ? this.menuOptions : [])
     },
     handleAuthUser(row) {
-      const roleId = row.roleId
-      this.$router.push('/role-auth/user/' + roleId)
+      const id = row.id
+      this.$router.push('/role-auth/user/' + id)
     }
   }
 }

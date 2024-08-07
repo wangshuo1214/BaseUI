@@ -41,7 +41,7 @@
       v-if="refreshTable"
       v-loading="loading"
       :data="menuList"
-      row-key="menuId"
+      row-key="id"
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
@@ -52,7 +52,6 @@
         </template>
       </el-table-column>
       <el-table-column prop="orderNum" label="排序" width="60" />
-      <el-table-column prop="perms" label="权限标识" :show-overflow-tooltip="true" />
       <el-table-column prop="component" label="组件路径" :show-overflow-tooltip="true" />
       <el-table-column prop="createTime" label="创建时间" align="center">
         <template slot-scope="scope">
@@ -103,11 +102,11 @@
               <el-radio-group v-model="form.menuType">
                 <el-radio label="C">目录</el-radio>
                 <el-radio label="M">菜单</el-radio>
-                <el-radio label="B">按钮</el-radio>
+                <!-- <el-radio label="B">按钮</el-radio> -->
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col v-if="form.menuType !== 'B'" :span="24">
+          <el-col :span="24">
             <el-form-item label="菜单图标" prop="icon">
               <el-popover
                 placement="bottom-start"
@@ -139,7 +138,7 @@
               <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
             </el-form-item>
           </el-col>
-          <el-col v-if="form.menuType !== 'B'" :span="12">
+          <el-col :span="12">
             <el-form-item prop="isFrame">
               <span slot="label">
                 <el-tooltip content="选择是外链则路由地址需要以`http(s)://`开头" placement="top">
@@ -148,12 +147,12 @@
                 是否外链
               </span>
               <el-radio-group v-model="form.isFrame">
-                <el-radio label="0">是</el-radio>
-                <el-radio label="1">否</el-radio>
+                <el-radio label="1">是</el-radio>
+                <el-radio label="0">否</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col v-if="form.menuType != 'B'" :span="12">
+          <el-col :span="12">
             <el-form-item prop="path">
               <span slot="label">
                 <el-tooltip content="访问的路由地址，如：`user`，如外网地址需内链访问则以`http(s)://`开头" placement="top">
@@ -176,17 +175,6 @@
             </el-form-item>
           </el-col>
           <el-col v-if="form.menuType != 'C'" :span="12">
-            <el-form-item prop="perms">
-              <el-input v-model="form.perms" placeholder="请输入权限标识" maxlength="100" />
-              <span slot="label">
-                <el-tooltip content="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasPermi('user:list')`)" placement="top">
-                  <i class="el-icon-question" />
-                </el-tooltip>
-                权限字符
-              </span>
-            </el-form-item>
-          </el-col>
-          <el-col v-if="form.menuType == 'M'" :span="12">
             <el-form-item prop="query">
               <el-input v-model="form.query" placeholder="请输入路由参数" maxlength="255" />
               <span slot="label">
@@ -196,6 +184,9 @@
                 路由参数
               </span>
             </el-form-item>
+          </el-col>
+          <el-col v-if="form.menuType == 'M'" :span="12">
+            
           </el-col>
           <el-col v-if="form.menuType == 'M'" :span="12">
             <el-form-item prop="isCache">
@@ -211,7 +202,7 @@
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col v-if="form.menuType != 'B'" :span="12">
+          <el-col :span="12">
             <el-form-item prop="visible">
               <span slot="label">
                 <el-tooltip content="选择隐藏则路由将不会出现在侧边栏，但仍然可以访问" placement="top">
@@ -290,7 +281,7 @@ export default {
   },
   created() {
     this.getList()
-    this.getDicts('sys_show_hide').then(response => {
+    this.getDicts('menu_status').then(response => {
       this.visibleOptions = response.data
     })
   },
@@ -302,7 +293,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        menuId: undefined,
+        id: undefined,
         parentId: 0,
         menuName: undefined,
         icon: undefined,
@@ -310,7 +301,8 @@ export default {
         orderNum: undefined,
         isFrame: '0',
         isCache: '1',
-        visible: '1'
+        visible: '1',
+        component: undefined
       }
       this.resetForm('form')
     },
@@ -323,11 +315,11 @@ export default {
       })
     },
     /** 查询菜单下拉树结构 */
-    getTreeselect(bmMenuId) {
-      listMenuExcludeChild(bmMenuId).then(response => {
+    getTreeselect(id) {
+      listMenuExcludeChild(id).then(response => {
         this.menuOptions = []
-        const menu = { menuId: 0, menuName: '主类目', children: [] }
-        menu.children = this.handleTree(response.data, 'menuId')
+        const menu = { id: 0, menuName: '主类目', children: [] }
+        menu.children = this.handleTree(response.data, 'id')
         this.menuOptions.push(menu)
       })
     },
@@ -335,7 +327,7 @@ export default {
     getList() {
       this.loading = true
       listMenu(this.queryParams).then(response => {
-        this.menuList = this.handleTree(response.data, 'menuId')
+        this.menuList = this.handleTree(response.data, 'id')
         this.loading = false
       })
     },
@@ -354,7 +346,7 @@ export default {
         delete node.children
       }
       return {
-        id: node.menuId,
+        id: node.id,
         label: node.menuName,
         children: node.children
       }
@@ -363,8 +355,8 @@ export default {
     handleAdd(row) {
       this.reset()
       this.getTreeselect()
-      if (row != null && row.menuId) {
-        this.form.parentId = row.menuId
+      if (row != null && row.id) {
+        this.form.parentId = row.id
       } else {
         this.form.parentId = 0
       }
@@ -375,14 +367,14 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.form.menuId !== undefined) {
-            this.initUpdateData(this.form.menuType)
+          if (this.form.id !== undefined) {
             updateMenu(this.form).then(response => {
               this.msgSuccess('修改成功')
               this.open = false
               this.getList()
             })
           } else {
+            this.initUpdateData()
             addMenu(this.form).then(response => {
               this.msgSuccess('新增成功')
               this.open = false
@@ -395,27 +387,17 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      this.getTreeselect(row.menuId)
-      getMenu(row.menuId).then(response => {
+      this.getTreeselect(row.id)
+      getMenu(row.id).then(response => {
         this.form = response.data
         this.open = true
         this.title = '修改菜单'
       })
     },
-    initUpdateData(menuType) {
-      if (menuType === 'C') {
-        this.form.component = ''
-        this.form.perms = ''
-        this.form.query = ''
-        this.form.isCache = 1
-      } else if (menuType === 'B') {
-        this.form.icon = ''
-        this.form.isFrame = 0
-        this.form.path = ''
-        this.form.component = ''
-        this.form.query = ''
-        this.form.isCache = 1
-      }
+    initUpdateData() {
+      this.form.component = ''
+      this.form.query = ''
+      this.form.isCache = 1
     },
     /** 删除按钮操作 */
     handleDelete(row) {
@@ -424,7 +406,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return delMenu(row.menuId)
+        return delMenu(row.id)
       }).then(() => {
         this.getList()
         this.msgSuccess('删除成功')
